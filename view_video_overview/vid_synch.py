@@ -1,5 +1,3 @@
-#### VIDEO SYNCHRONY BAR ####
-
 ## VIDEO SYNCHRONY BAR 
 # Heatmap with Datetime Axis
     # Heatmap with Datetime Axis Resources 
@@ -7,15 +5,11 @@
     # Color Resources: 
         # https://plotly.com/python/builtin-colorscales
 
-#### Import Packages ####
 import plotly.graph_objects as go
 import plotly as plt
 import datetime as dt
 import numpy as np
 import pandas as pd
-
-##### IMPORT AND CLEAN THE DATA ####
-# Import the Data
 
 # Identify the columns to be used
 TS_COL = "timestamp"                # identifies the timestamp column
@@ -25,8 +19,6 @@ HF_COL = "hf_coh"                   # identifies the high frequeny coherence col
 
 ## VIDEO SYNCHRONY BAR 
 # Heatmap with Datetime Axis
-
-
 def make_synch_heat(df, minimal=False):
     df = df.copy()
 
@@ -60,7 +52,7 @@ def make_synch_heat(df, minimal=False):
             paper_bgcolor="rgba(0,0,0,0)",      # transparent background to fit in dashboard
             plot_bgcolor="rgba(0,0,0,0)",       # transparent plot area to fit in dashboard
             dragmode=False                      # disables drag to zoom on heatmap
-        )                          # make it transparent so when it is in app.py dashboard it will not show                                       # make it transparent so when it is in app.py dashboard it will not show going beyond the container
+        )                                                                
         fig.update_xaxes(
             showgrid=False,
             showline=False,
@@ -76,8 +68,8 @@ def make_synch_heat(df, minimal=False):
             ticks="",                           # Don't display High/Low freq labels: maybe on hover?
             zeroline=False,
         )
+
     else:
-        # home tab: same as before
         fig.update_layout(
             margin=dict(l=40, r=8, t=4, b=16),
             autosize=True,
@@ -95,6 +87,5 @@ def make_synch_heat(df, minimal=False):
             showgrid=False,
         )
         fig.update_layout(font=dict(family="Lato, sans-serif"))
-
 
     return fig

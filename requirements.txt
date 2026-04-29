@@ -1,0 +1,6 @@
+dash
+dash-player
+plotly
+pandas
+numpy
+openpyxl

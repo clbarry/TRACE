@@ -5,8 +5,6 @@
     # Colors from Plotly's 'BuPu' colorscale
     # Plotly colors: rgb(85, 4, 83) highest from Plotly's 'BuPu' colorscale
 
-
-# Import Libraries
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
@@ -20,22 +18,18 @@ LF_COL = "lf_coh"                   # identifies the low frequency concordance c
 HF_COL = "hf_coh"                   # identifies the high frequency concordance column
 
 # Color Scheme 
-BU_PU = px.colors.sequential.BuPu    # Plotly's 'BuPu' colorscale 
+BU_PU = px.colors.sequential.BuPu    
 
 OUTLINE_COLOR = 'rgb(140, 107, 177)'      # lighter purple color from 'BuPu' colorscale for violin plot outline (LAST number is the transparency)
 LINE_COLOR = 'rgb(85, 4, 83)'             # darkest color from 'BuPu' colorscale for violin plot outline and inner boxplot
 VIOLIN_COLOR = 'rgb(191, 211, 230, 0.75)' # light blue from 'BuPu' colorscale for the fill of the violin plot
 
+def make_violin(df):
 
-# Defines make_violin function 
-def make_violin(df):  # pass df argument
-
-    # clean coh columns (make them numbers, fill null vals with 0)
     for col in [LF_COL, HF_COL]:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)       # cleans the concordance columns to make them number and fill null values with 0 
     df = df.sort_values("timestamp").reset_index(drop=True)                 # sorts the values by the timestamp and resets the index in that order
     
-
     # Calculate mean and median for hover info
     lf_mean = df["lf_coh"].mean()
     lf_median = df["lf_coh"].median()
@@ -70,7 +64,7 @@ def make_violin(df):  # pass df argument
             "<extra></extra>"
            )
         ),
-        row=1, col=2                                    # sets the position of this subplot in the figure (row 1, column 1
+        row=1, col=2                                   
     )
 
     # HF concordance violin
@@ -97,7 +91,6 @@ def make_violin(df):  # pass df argument
         row=1, col=1
     )
     
-
     # Customize x and y axes to have consistent look
     fig.update_xaxes(
         showgrid=False,               # no vertical gridlines
@@ -106,7 +99,7 @@ def make_violin(df):  # pass df argument
         linecolor="lightgray",        # light gray x-axis line color
         linewidth=1,
         showticklabels=False,         # hide x-axis tick labels
-        range=[-0.5, 0.5]             # fix x-axis range to violin width (added because the trace for the threashold for meaningful synchrony added a width to the x-axis)
+        range=[-0.5, 0.5]             # fix x-axis range to violin width (added because the trace for the threashold for meaningful concordance added a width to the x-axis)
         )
 
     fig.update_yaxes(
@@ -141,7 +134,6 @@ def make_violin(df):  # pass df argument
         x0=-0.5, y0=0.5,            # line start point on x-axis (violin left edge; match plot span x-axis)
         x1=0.5, y1=0.5,             # line endpoint on x-axis (violin right edge; match plot span x-axis)
         line=dict(color=LINE_COLOR, width=2, dash="dash"),
-        #row=1, col=1
     )
 
     # Add threshold line for LF subplot
@@ -152,19 +144,17 @@ def make_violin(df):  # pass df argument
         x0=-0.5, y0=0.5,            # line start point on x-axis (violin 2 left edge; match plot span x-axis)
         x1=0.5, y1=0.5,             # line endpoint on x-axis (violin 2 right edge; match plot span x-axis)
         line=dict(color=LINE_COLOR, width=2, dash="dash"),
-        #row=1, col=2           
     )
 
 
     # Annotation font for subplot titles
-        # Updated to allow for different font sizes for the threashold annotation
     fig.update_annotations(
         font=dict(size=14, color="black"),
-        selector=dict(text="High Frequency Concordance")  # Only update subplot titles
+        selector=dict(text="High Frequency Concordance")
     )
     fig.update_annotations(
         font=dict(size=14, color="black"),
-        selector=dict(text="Low Frequency Concordance")  # Only update subplot titles
+        selector=dict(text="Low Frequency Concordance")
     )
     fig.update_layout(font=dict(family="Lato, sans-serif"))
 

@@ -1,13 +1,8 @@
-
-#### Import Packages ####
 import plotly.graph_objects as go
 import plotly as plt
 import datetime as dt
 import numpy as np
 import pandas as pd
-
-##### IMPORT AND CLEAN THE DATA ####
-# Import the Data
 
 # Identify the columns to be used
 TS_COL = "timestamp"                # identifies the timestamp column
@@ -27,8 +22,6 @@ LEAD_COLORS = [
 
 ## VIDEO DYAD LEAD BAR 
 # Heatmap with Datetime Axis
-
-
 def make_lead_heat(df, minimal=False):
     df = df.copy()
 
@@ -37,7 +30,7 @@ def make_lead_heat(df, minimal=False):
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)                           # cleans the coherence columns to make them number and fill null values with 0
     df = df.sort_values("timestamp").reset_index(drop=True)                                     # sorts the values by the timestamp and resets the index in that order
     #labels = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S').tolist()                          # makes a string label for x-axis
-    df["leading_num"] = df["leading"].str.upper().map({"C": 1, "P": 2}).fillna(0).astype(int)   # map leading column to numeric values for plotting, C=1, P=2, .astype(int) to ensure integer type
+    df["leading_num"] = df["leading"].str.upper().map({"C": 1, "P": 2}).fillna(0).astype(int)   # map leading column to numeric values for plotting
     # define the data for the heatmap
     lead = ["Leading"]                          # y = identifies leading_num as the rows in the heat map (y order must match z order of z)
     times = df['timestamp']                     # x = identifies timestamp as the x axis measure
@@ -70,7 +63,6 @@ def make_lead_heat(df, minimal=False):
             showline=False,
             showticklabels=False,               # hide x-axis labels for stacking of heatmaps in app.py
             ticks="",                           # Don't display time labels: maybe on hover?
-            #tickfont=dict(size=8),
             zeroline=False,
         )
         fig.update_yaxes(
@@ -80,8 +72,8 @@ def make_lead_heat(df, minimal=False):
             ticks="",                           # Don't display High/Low freq labels: maybe on hover?
             zeroline=False,
         )
+        
     else:
-        # home tab: same as before
         fig.update_layout(
             margin=dict(l=40, r=8, t=4, b=16),
             autosize=True,
@@ -105,6 +97,5 @@ def make_lead_heat(df, minimal=False):
             showline=False,
         )
         fig.update_layout(font=dict(family="Lato, sans-serif"))
-
 
     return fig

@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 
-
 # Define choices for engagement calculation
 CHOICES = [
     1,   # sje = 1 then new value = 1
@@ -26,9 +25,9 @@ ENG_FULL = {
 
 # Set colors for pie chart (keys now match FULL labels)
 PIE_COLORS = {
-    'No Joint Engagement'        : 'rgb(235,206,203)',          # soft rose
-    'Supported Joint Engagement (SJE)' : 'rgb(230, 140, 130)',  # warm coral rose
-    'Coordinated Joint Engagement (CJE)': 'rgb(217,89,108)'     # coral raspberry
+    'No Joint Engagement'               : 'rgb(235,206,203)',          # soft rose
+    'Supported Joint Engagement (SJE)'  : 'rgb(230, 140, 130)',        # warm coral rose
+    'Coordinated Joint Engagement (CJE)': 'rgb(217,89,108)'            # coral raspberry
 }
 
 def make_pie(df):
@@ -101,4 +100,3 @@ def make_pie(df):
 
     return fig
 
-# End of make_pie function

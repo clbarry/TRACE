@@ -1,26 +1,24 @@
 import pandas as pd
 from dash import html
 
-
 TS_COL = "timestamp"
 LEADING_COL = "leading"
 
-
 def get_leader(df, row_index: int = 1):
-
     if len(df) == 0:
         return "Child", "/assets/lead_child.png"
 
     idx = max(0, min(row_index, len(df) - 1))
-    #get 'C' or 'P' from first row in leading col (for now)
+
+    #get 'C' or 'P' from first row in leading col to start
     leader_val = str(df.iloc[idx].get(LEADING_COL, "")).strip().upper()
-    # this will determing what png is returned
+
     if leader_val.startswith("P"):
         return "Parent", "/assets/lead_parent.png"
     else:
         return "Child", "/assets/lead_child.png"
 
-# setting to value in first cell for now
+# Set to value in first cell to start
 def make_leading_panel(df, row_index: int = 1):
 
     leader_label, leader_img = get_leader(df, row_index=row_index)

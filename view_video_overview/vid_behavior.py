@@ -1,13 +1,8 @@
-#### Import Packages ####
 import plotly.graph_objects as go
 import plotly as plt
 import datetime as dt
 import numpy as np
 import pandas as pd
-from load_data import df     # import the main dataframe
-
-
-#Define the constants for the data cleaning and plotting
 
 # Identify the columns to be used
 TS_COL = "timestamp"                # identifies the timestamp column
@@ -21,7 +16,7 @@ CHOICES = [
 ]
 
 # Color Scheme for Behavioral Engagement
-    # 0: No Engagement, 1: SJE, 2: CJE
+# 0: No Engagement, 1: SJE, 2: CJE
 BEHAVIOR_COLORS = [
     [0.0,  "rgb(235,206,203)"],         # for z = 0; No Engagement
     [0.5,  "rgb(230, 140, 130)"],       # for z = 1; SJE
@@ -30,8 +25,6 @@ BEHAVIOR_COLORS = [
 
 ## VIDEO BEHAVIORAL ENGAGEMENT BAR 
 # Heatmap with Datetime Axis
-
-
 def make_behavior_heat(df, minimal=False):
     # loads and cleans df for behavior heatmap
     df = df.copy()
@@ -77,7 +70,7 @@ def make_behavior_heat(df, minimal=False):
             paper_bgcolor="rgba(0,0,0,0)",      # transparent background to fit in dashboard
             plot_bgcolor="rgba(0,0,0,0)",       # transparent plot area to fit in dashboard
             dragmode=False                      # disables drag to zoom on heatmap
-        )                              # make it transparent so when it is in app.py dashboard it will not show going beyond the container
+        )                              
 
     # Upadate layout for viewing in different tabs (minimal for video playback, else for home tab)
     if minimal:
@@ -101,11 +94,11 @@ def make_behavior_heat(df, minimal=False):
             showgrid=False,
             showline=False,                     # no lines  
             showticklabels=False,               # hide y engagement labels
-            ticks="",                           # Don't display y engagement labels: maybe on hover?
+            ticks="",                           # Don't display y engagement labels
             zeroline=False,
         )
+
     else:
-        # home tab: same as before
         fig.update_layout(
             margin=dict(l=40, r=8, t=4, b=16),
             autosize=True,
@@ -123,6 +116,5 @@ def make_behavior_heat(df, minimal=False):
             showgrid=False,
         )
         fig.update_layout(font=dict(family="Lato, sans-serif"))
-
 
     return fig
