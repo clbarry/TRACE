@@ -6,6 +6,18 @@ TRACE integrates moment-level indicators, aggregate summaries, and video-based n
 
 For full design rationale, task analysis, and expert evaluation, please see our manuscript.
 
+## Authors
+
+TRACE was developed by:
+
+- **Carey L. Barry** — Northeastern University
+- **Julia Weppler** — Northeastern University
+- **Yuna Watanabe** — Northeastern University
+- **Anna Wallisch** — University of Kansas Medical Center
+- **Michelle A. Borkin** — Northeastern University
+- **Matthew S. Goodwin** — Northeastern University (co-senior author)
+- **Melanie Tory** — Northeastern University (co-senior author)
+  
 ## Demo Video
 
 *A demo video walking through TRACE's features will be added here.*
