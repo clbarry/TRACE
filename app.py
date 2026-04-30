@@ -1,4 +1,5 @@
 import pandas as pd
+import copy
 from dash import Dash, html, dcc, callback_context
 from dash.exceptions import PreventUpdate
 import plotly.graph_objects as go
@@ -16,15 +17,10 @@ from view_summary.sum_synch_bar import make_synch_bar
 from view_summary.sum_synch_violin import make_violin
 from view_summary.sum_table import make_summary_table
 
-from view_vid_bars.vid_lead_bar import make_lead_bar_heatmap
-from view_vid_bars.vid_synch_bar import make_synch_bar_heatmap
-from view_vid_bars.vid_behavior_bar import make_behavior_bar_heatmap
-
 from vid_heatmaps import make_stacked_heatmaps
 
 from legend import make_combined_legend
 
-#Load Data
 from load_data import df, VIDEO                         # import the main dataframe and video path
 
 
@@ -79,7 +75,6 @@ FIG_LEADING_PANEL      = make_leading_panel(df, row_index=1)
 FIG_BEHAVIOR_PANEL     = make_behavior_panel(df, row_index=1)
 
 FIG_SYNCH_BAR          = make_synch_bar(df)
-FIG_SYNCH_BAR.update_layout(clickmode="event+select")
 FIG_VIOLIN             = make_violin(df)
 TABLE_SUMMARY          = make_summary_table(df)
 FIG_PIE                = make_pie(df)
@@ -101,41 +96,6 @@ pio.templates.default = "lato"
 
 TS_SERIES = pd.to_datetime(df[TS_COL]) # array of timestamps from our df, to make indexing easier
 VIDEO_START = TS_SERIES.iloc[0]
-
-## CREATES SLIDER MARKS FOR THE TIMELINE RANGE SLIDER
-##### NOT USED IN TRACE COULD CONSIDER IN FUTURE #####
-# Create slider marks that exactly match heatmap x-axis ticks
-sample_fig = make_stacked_heatmaps(minimal=False)
-heatmap_tickvals = sample_fig.layout.xaxis.tickvals
-heatmap_ticktext = sample_fig.layout.xaxis.ticktext
-
-# Convert heatmap ticks to slider marks for the range slider
-if heatmap_tickvals is not None and heatmap_ticktext is not None:
-    SLIDER_MARKS = {
-        int((pd.to_datetime(tick) - TS_SERIES.min()).total_seconds()): {
-            "label": text,
-            "style": {"fontSize": "9px", "whiteSpace": "nowrap"}
-        }
-        for tick, text in zip(heatmap_tickvals, heatmap_ticktext)
-    }
-else:
-    # Fallback if ticks aren't set
-    SLIDER_MARKS = {
-        int((t - TS_SERIES.min()).total_seconds()): {
-            "label": t.strftime("%Y-%m-%d %H:%M:%S"),
-            "style": {"fontSize": "12px", "whiteSpace": "nowrap"}
-        }
-        for t in pd.date_range(TS_SERIES.min(), TS_SERIES.max(), freq='2min')
-    }
-
-
-#FIG_SYNCH_BAR_HEAT     = make_synch_bar_heatmap(df)
-#FIG_LEAD_BAR_HEAT      = make_lead_bar_heatmap(df, minimal=False)
-#FIG_BEHAVIOR_BAR_HEAT  = make_behavior_bar_heatmap(df, minimal=False)
-
-#FIG_SYNCH_BAR_HEAT_MIN = make_synch_bar_heatmap(df, minimal=True)
-#FIG_LEAD_BAR_HEAT_MIN  = make_lead_bar_heatmap(df, minimal=True)
-#FIG_BEHAVIOR_BAR_HEAT_MIN = make_behavior_bar_heatmap(df, minimal=True)
 
 def chart_header(title: str, index: str, body: str):
     # index: string per chart (“summary”, “pie”, “timeline”)
@@ -245,11 +205,11 @@ def make_synchrony_gradient_legend():
         row=1,
         col=1,
     )
+
     fig.update_yaxes(
         showticklabels=False,
         showgrid=False,
         zeroline=False,
-        # bar is 0..n_steps, axis is slightly bigger
         range=[-pad, n_steps + pad],
         row=1,
         col=1,
@@ -369,19 +329,14 @@ def home_layout(show_pit: bool = False):
                 "alignItems": "stretch",
             },
             children=[
-                # Hidden PIT stuff so callbacks have targets
                 html.Div(
                     style={"display": "none"},
                     children=[
-                        dcc.Graph(
-                            id="synch-glyph",
-                            figure=FIG_SYNCH_GLYPH,
-                        ),
+                        dcc.Graph(id="synch-glyph", figure=FIG_SYNCH_GLYPH),
                         html.Div(id="dyad-leading-panel", children=FIG_LEADING_PANEL),
                         html.Div(id="dyad-behavior-panel", children=FIG_BEHAVIOR_PANEL),
                     ],
                 ),
-
                 # big summary (cols 1–2, row 1) 
                 html.Div(
                     style={**CARD_STYLE, "gridArea": "summary"},
@@ -1095,10 +1050,6 @@ def play_layout():
         ],
     )
 
-# Prebuild layouts once
-HOME_LAYOUT = home_layout()
-PLAY_LAYOUT = play_layout()
-
 # Main app layout
 app.layout = html.Div(
     style={
@@ -1307,10 +1258,8 @@ def update_heatmaps_cursor(current_time):
     # only update when the second actually changes
     last_sec = getattr(update_heatmaps_cursor, "last_sec", None)
     if rounded_sec == last_sec:
-        # skip doing any work
         raise PreventUpdate
 
-    # remember this second for next time
     update_heatmaps_cursor.last_sec = rounded_sec
 
     # map rounded_sec to absolute timestamp
@@ -1340,27 +1289,25 @@ def update_heatmaps_cursor(current_time):
     Output("synchrony-violin", "figure"),
     Output("engagement-pie-chart", "figure"),
     Output("leader-filter-store", "data"),
-    Input("leading-behaviors", "selectedData"),
+    Output("leading-behaviors", "clickData"),       
+    Input("leading-behaviors", "clickData"),
     Input("time-window-store", "data"),
     State("leader-filter-store", "data"),
 )
-def filter_by_leader(selected_data, time_window, current_filter): 
+def filter_by_leader(click_data, time_window, current_filter):
     base_df = df.copy()
-
     full_bar_fig = make_synch_bar(base_df.copy())
-    full_bar_fig.update_layout(clickmode="event+select")
 
-    new_filter = None
+    new_filter = current_filter
+    ctx = callback_context
+    triggered = ctx.triggered[0]["prop_id"] if ctx.triggered else ""
 
-    # leader selection from bar chart
-    if selected_data and "points" in selected_data and selected_data["points"]:
-        point = selected_data["points"][0]
-        leader_label = point.get("x")  # "Child" / "Parent"
-        if leader_label == "Child":
-            new_filter = "Child"
-        elif leader_label == "Parent":
-            new_filter = "Parent"
-    # else stays none
+    if triggered == "leading-behaviors.clickData" and click_data:
+        clicked_label = click_data["points"][0].get("x")
+        if clicked_label == current_filter:
+            new_filter = None              # toggle off
+        elif clicked_label in ("Child", "Parent"):
+            new_filter = clicked_label     # toggle on / switch
 
     filtered_df = base_df
 
@@ -1370,7 +1317,6 @@ def filter_by_leader(selected_data, time_window, current_filter):
         lead_col_norm = filtered_df[LEAD_COL].astype(str).str.strip()
         filtered_df = filtered_df[lead_col_norm.str.startswith(code)]
 
-    # time-window filter
     if time_window and isinstance(time_window, dict):
         start = time_window.get("start")
         end = time_window.get("end")
@@ -1383,7 +1329,6 @@ def filter_by_leader(selected_data, time_window, current_filter):
 
     filtered_df = filtered_df.reset_index(drop=True)
 
-    # style the bar chart to show which leader is active
     leading_fig = full_bar_fig
     if new_filter in ["Child", "Parent"]:
         selected = new_filter
@@ -1400,11 +1345,10 @@ def filter_by_leader(selected_data, time_window, current_filter):
             trace.update(marker=dict(opacity=1.0))
         leading_fig.update_layout(title="Moments of Concordance Led by Each Participant")
 
-    # violin + pie on filtered_df 
     violin_fig = make_violin(filtered_df.copy())
     pie_fig = make_pie(filtered_df.copy())
 
-    return leading_fig, violin_fig, pie_fig, new_filter
+    return leading_fig, violin_fig, pie_fig, new_filter, None 
 
 @app.callback(
     Output("synch-glyph-play", "figure"),
@@ -1466,17 +1410,14 @@ def update_glyph_from_video(current_time):
     lf_vals, lf_cols = half_donut_segments(lf)
     hf_vals, hf_cols = half_donut_segments(hf)
 
-    # start from the original glyph
-    fig = go.Figure(FIG_SYNCH_GLYPH)
-
     # traces:
     # 0 = left background
     # 1 = right background
     # 2 = LF gradient arc
     # 3 = HF gradient arc
+    fig = go.Figure(FIG_SYNCH_GLYPH.to_dict())   # deep copy via dict
     fig.data[2].values = lf_vals
     fig.data[2].marker.colors = lf_cols
-
     fig.data[3].values = hf_vals
     fig.data[3].marker.colors = hf_cols
 
@@ -1645,8 +1586,7 @@ def nav_from_heatmap_click_or_hover(clickData, hoverData, highlight_mode, curren
     # update PIT glyph
     lf_vals, lf_cols = half_donut_segments(lf)
     hf_vals, hf_cols = half_donut_segments(hf)
-
-    glyph_fig = go.Figure(FIG_SYNCH_GLYPH)
+    glyph_fig = go.Figure(FIG_SYNCH_GLYPH.to_dict()) 
     glyph_fig.data[2].values = lf_vals
     glyph_fig.data[2].marker.colors = lf_cols
     glyph_fig.data[3].values = hf_vals

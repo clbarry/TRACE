@@ -9,8 +9,6 @@ THRESH = 0.5
 SJE_COL = "sje"
 CJE_COL = "cje"
 
-
-
 def event_durations(mask):
 
     # given a boolean true/false for each second,
@@ -85,8 +83,8 @@ def make_summary_table(df):
         "fontSize": "14px",
         "whiteSpace": "nowrap",
         "fontFamily": "Lato, sans-serif",
-
     }
+    
     cell_right = {
         "padding": "4px 8px",
         "borderBottom": "1px solid #ccc",

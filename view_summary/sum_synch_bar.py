@@ -2,22 +2,21 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 
-# Identify the columns to be used - CONSTANTS
+# Identify the columns to be used
 LF_COL = "lf_coh"
 HF_COL = "hf_coh"
 THRESH = 0.5
 LEAD_COL = "leading"
 
-
 # Defines make_synch_bar function using with dataframe passed as argument to allow responsive updates to filtering/brushing
 def make_synch_bar(df):
    
-   #Clean the df inside the function to allow responsive updates to filtering/brushing
+    # Clean the df inside the function to allow responsive updates to filtering/brushing
     df[LEAD_COL] = df[LEAD_COL].astype(str).str.strip()
 
     # Helper function to find start indices of events
     # An event is defined as a contiguous sequence of True values in the mask
-        # mask helps identify concordance (concordance ≥ 0.5) and specifically finds when those moments start, so the code can count who was leading at those critical transition points
+    # mask helps identify concordance (concordance >= 0.5) and specifically finds when those moments start, so the code can count who was leading at those critical transition points
     def find_event_starts(mask):
         starts = []
         in_run = False
@@ -107,7 +106,7 @@ def make_synch_bar(df):
                      title_standoff=15,
                      linewidth=1)
 
-    fig.layout.yaxis.title.text = "Count"    # set only on left
+    fig.layout.yaxis.title.text = "Count"    # set on left
     fig.update_layout(font=dict(family="Lato, sans-serif"))
 
     return fig
